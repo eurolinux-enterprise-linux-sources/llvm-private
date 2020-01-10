@@ -1,4 +1,4 @@
-%global maj_ver 6
+%global maj_ver 7
 %global min_ver 0
 %global patch_ver 1
 
@@ -43,7 +43,7 @@ ExcludeArch: ppc s390 %{?rhel6:s390x}
 
 Name:		llvm-private
 Version:	%{maj_ver}.%{min_ver}.%{patch_ver}
-Release:	2%{?dist}
+Release:	1%{?dist}
 Summary:	llvm engine for Mesa
 
 Group:          System Environment/Libraries
@@ -55,9 +55,8 @@ Source2:	http://llvm.org/releases/%{version}/cfe-%{version}%{?rc_ver:rc%{rc_ver}
 Source100:	llvm-config.h
 Source101:	clang-config.h
 
+Patch0:	0001-Don-t-set-rpath-when-installing.patch
 Patch1: 0001-Fix-CMake-include-patch.patch
-Patch5: 0001-Export-LLVM_DYLIB_COMPONENTS-in-LLVMConfig.cmake.patch
-Patch6: 0001-Don-t-run-BV-DAG-Combine-before-legalization-if-it-a.patch
 
 BuildRequires:	cmake
 BuildRequires:	zlib-devel
@@ -86,9 +85,8 @@ support in Mesa.
 
 tar xf %{SOURCE1}
 
+%patch0 -p1 -b .rpath
 %patch1 -p1 -b .fixinc
-%patch5 -p1 -b .cmake-fix
-%patch6 -p1 -b .p9-fix
 
 %build
 
@@ -248,7 +246,7 @@ make %{?_smp_mflags} check-all
 
 %files
 %doc LICENSE.TXT
-%{_libdir}/libLLVM-%{maj_ver}.%{min_ver}*-%{llvm_lib_suffix}.so
+%{_libdir}/libLLVM-%{maj_ver}*-%{llvm_lib_suffix}.so
 %{_libdir}/clang-private/libclang*.so*
 
 %files devel
@@ -261,6 +259,9 @@ make %{?_smp_mflags} check-all
 %{_libdir}/clang/%{version}/include
 
 %changelog
+* Mon Jan 14 2019 Tom Stellard <tstellar@redhat.com> - 7.0.1-1
+- 7.0.1 Release
+
 * Thu Jul 19 2018 Tom Stellard <tstellar@redhat.com> - 6.0.1-2
 - Fix crash on power9
 - Resolves: rhbz#1595996
