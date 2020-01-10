@@ -1,3 +1,7 @@
+%global maj_ver 5
+%global min_ver 0
+%global patch_ver 0
+
 # Components enabled if supported by target architecture:
 %ifarch %ix86 x86_64
   %bcond_without gold
@@ -36,8 +40,8 @@ ExcludeArch: ppc s390 %{?rhel6:s390x}
 %global llvm_lib_suffix rhel
 
 Name:		llvm-private
-Version:	3.9.1
-Release:	9%{?dist}
+Version:	%{maj_ver}.%{min_ver}.%{patch_ver}
+Release:	3%{?dist}
 Summary:	llvm engine for Mesa
 
 Group:          System Environment/Libraries
@@ -49,17 +53,8 @@ Source2:	http://llvm.org/releases/%{version}/cfe-%{version}.src.tar.xz
 Source100:	llvm-config.h
 Source101:	clang-config.h
 
-Patch1: fix-cmake-include.patch
-Patch2: clang-hardcode-have-zlib.patch
-# Clang patch for changes in rust-lang-llvm-pr47.patch (LLVM r277951 to be exact).
-Patch3: rust-lang-clang-pr47.patch
-# backports cribbed from https://github.com/rust-lang/llvm/
-Patch47:        rust-lang-llvm-pr47.patch
-Patch53:        rust-lang-llvm-pr53.patch
-Patch54:        rust-lang-llvm-pr54.patch
-Patch55:        rust-lang-llvm-pr55.patch
-Patch57:        rust-lang-llvm-pr57.patch
-
+Patch1: 0001-Fix-CMake-include-patch.patch
+Patch2: 0001-PowerPC-Don-t-use-xscvdpspn-on-the-P7.patch
 
 BuildRequires:	cmake
 BuildRequires:	zlib-devel
@@ -85,19 +80,12 @@ support in Mesa.
 %prep
 %setup -T -q -b 2 -n cfe-%{version}.src
 
-%patch2 -p1 -b .havezlib
-%patch3 -p1 -b .clangrust47
-
 %setup -q -n llvm-%{version}.src
 
 tar xf %{SOURCE1}
 
 %patch1 -p1 -b .fixinc
-%patch47 -p1 -b .rust47
-%patch53 -p1 -b .rust53
-%patch54 -p1 -b .rust54
-%patch55 -p1 -b .rust55
-%patch57 -p1 -b .rust57
+%patch2 -p1 -b .xscvdpsp
 
 %build
 
@@ -129,7 +117,7 @@ export PATH=$BUILD_DIR/bin:$PATH
 	-DLLVM_LIBDIR_SUFFIX= \
 %endif
 	\
-	-DLLVM_TARGETS_TO_BUILD="%{host_target}%{?amdgpu}" \
+	-DLLVM_TARGETS_TO_BUILD="%{host_target}%{?amdgpu};BPF" \
 	-DLLVM_ENABLE_LIBCXX:BOOL=OFF \
 	-DLLVM_ENABLE_ZLIB:BOOL=ON \
 	-DLLVM_ENABLE_FFI:BOOL=OFF \
@@ -269,7 +257,7 @@ make check-all || :
 
 %files
 %doc LICENSE.TXT
-%{_libdir}/libLLVM-3.9*-%{llvm_lib_suffix}.so
+%{_libdir}/libLLVM-%{maj_ver}.%{min_ver}*-%{llvm_lib_suffix}.so
 %{_libdir}/clang-private/libclang*.so*
 
 %files devel
@@ -282,6 +270,15 @@ make check-all || :
 %{_libdir}/clang/%{version}/include
 
 %changelog
+* Thu Dec 14 2017 Tom Stellard <tstellar@redhat.com> - 5.0.0-3
+- Backport r312612 from upstream llvm: [PowerPC] Don't use xscvdpspn on the P7
+
+* Thu Oct 19 2017 Tom Stellard <tstellar@redhat.com> - 5.0.0-2
+- Enable BPF target
+
+* Thu Oct 12 2017 Tom Stellard <tstellar@redhat.com> - 5.0.0-1
+- Update to 5.0.0
+
 * Thu Jun 01 2017 Tilmann Scheller <tschelle@redhat.com> - 3.9.1-9
 - Fix two Clang test failures and enable Clang regression tests during build.
 

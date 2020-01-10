@@ -1,0 +1,54 @@
+From f8dac15efe0c2330e1d24bcac89b1d01d9c794b9 Mon Sep 17 00:00:00 2001
+From: Tom Stellard <tstellar@redhat.com>
+Date: Mon, 2 Oct 2017 18:42:32 -0700
+Subject: [PATCH] Fix CMake include patch
+
+---
+ CMakeLists.txt | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 160f3b0..2fd3a27 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -303,6 +303,7 @@ else()
+ endif()
+ 
+ # Each of them corresponds to llvm-config's.
++#
+ set(LLVM_TOOLS_BINARY_DIR ${LLVM_RUNTIME_OUTPUT_INTDIR}) # --bindir
+ set(LLVM_LIBRARY_DIR      ${LLVM_LIBRARY_OUTPUT_INTDIR}) # --libdir
+ set(LLVM_MAIN_SRC_DIR     ${CMAKE_CURRENT_SOURCE_DIR}  ) # --src-root
+@@ -768,6 +769,11 @@ set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${LLVM_BINARY_DIR}/bin )
+ set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${LLVM_BINARY_DIR}/lib${LLVM_LIBDIR_SUFFIX} )
+ set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${LLVM_BINARY_DIR}/lib${LLVM_LIBDIR_SUFFIX} )
+ 
++if(INCLUDE_INSTALL_DIR)
++else()
++set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/include)
++endif()
++
+ if(APPLE AND DARWIN_LTO_LIBRARY)
+   set(CMAKE_EXE_LINKER_FLAGS
+     "${CMAKE_EXE_LINKER_FLAGS} -Wl,-lto_library -Wl,${DARWIN_LTO_LIBRARY}")
+@@ -949,7 +955,7 @@ add_subdirectory(cmake/modules)
+ 
+ if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY)
+   install(DIRECTORY include/llvm include/llvm-c
+-    DESTINATION include
++    DESTINATION "${INCLUDE_INSTALL_DIR}"
+     COMPONENT llvm-headers
+     FILES_MATCHING
+     PATTERN "*.def"
+@@ -961,7 +967,7 @@ if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY)
+     )
+ 
+   install(DIRECTORY ${LLVM_INCLUDE_DIR}/llvm
+-    DESTINATION include
++    DESTINATION "${INCLUDE_INSTALL_DIR}"
+     COMPONENT llvm-headers
+     FILES_MATCHING
+     PATTERN "*.def"
+-- 
+1.8.3.1
+
