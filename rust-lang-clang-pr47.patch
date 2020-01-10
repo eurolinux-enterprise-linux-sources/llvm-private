@@ -1,0 +1,38 @@
+From d4852c7a1a3ac86af2ac9197da4d26f49f270ab9 Mon Sep 17 00:00:00 2001
+From: David Majnemer <david.majnemer@gmail.com>
+Date: Sun, 7 Aug 2016 08:28:58 +0000
+Subject: [PATCH] Update clang tests for LLVM r277950
+
+We infer inbounds on GEPs of allocas leading to minor perturbations in
+tests.
+
+git-svn-id: https://llvm.org/svn/llvm-project/cfe/trunk@277953 91177308-0d34-0410-b5e6-96231b3b80d8
+---
+ test/CodeGenObjCXX/exceptions-legacy.mm | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/test/CodeGenObjCXX/exceptions-legacy.mm b/test/CodeGenObjCXX/exceptions-legacy.mm
+index dac259d..0650509 100644
+--- a/test/CodeGenObjCXX/exceptions-legacy.mm
++++ b/test/CodeGenObjCXX/exceptions-legacy.mm
+@@ -16,7 +16,7 @@ void test0(id obj) {
+ //   Enter the @synchronized block.
+ // CHECK:      call i32 @objc_sync_enter(i8* [[OBJ:%.*]])
+ // CHECK:      call void @objc_exception_try_enter([[BUF_T:%.*]]* nonnull [[BUF:%.*]])
+-// CHECK-NEXT: [[T0:%.*]] = getelementptr [[BUF_T]], [[BUF_T]]* [[BUF]], i32 0, i32 0, i32 0
++// CHECK-NEXT: [[T0:%.*]] = getelementptr inbounds [[BUF_T]], [[BUF_T]]* [[BUF]], i32 0, i32 0, i32 0
+ // CHECK-NEXT: [[T1:%.*]] = call i32 @_setjmp(i32* [[T0]])
+ // CHECK-NEXT: [[T2:%.*]] = icmp eq i32 [[T1]], 0
+ // CHECK-NEXT: br i1 [[T2]],
+@@ -55,7 +55,7 @@ void test1(id obj, bool *failed) {
+ // CHECK-LABEL:    define void @_Z5test1P11objc_objectPb(
+ //   Enter the @try block.
+ // CHECK:      call void @objc_exception_try_enter([[BUF_T]]* nonnull [[BUF:%.*]])
+-// CHECK-NEXT: [[T0:%.*]] = getelementptr [[BUF_T]], [[BUF_T]]* [[BUF]], i32 0, i32 0, i32 0
++// CHECK-NEXT: [[T0:%.*]] = getelementptr inbounds [[BUF_T]], [[BUF_T]]* [[BUF]], i32 0, i32 0, i32 0
+ // CHECK-NEXT: [[T1:%.*]] = call i32 @_setjmp(i32* [[T0]])
+ // CHECK-NEXT: [[T2:%.*]] = icmp eq i32 [[T1]], 0
+ // CHECK-NEXT: br i1 [[T2]],
+-- 
+1.8.3.1
+

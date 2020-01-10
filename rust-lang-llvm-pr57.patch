@@ -1,0 +1,28 @@
+From 5ac4f80be3e8b5d42475aeaba246455e0016c7ef Mon Sep 17 00:00:00 2001
+From: Anthony Ramine <n.oxyde@gmail.com>
+Date: Sun, 27 Nov 2016 16:28:12 +0100
+Subject: [rust-lang/llvm#57] Backport rL277331
+
+---
+ lib/Target/AArch64/AArch64InstrInfo.cpp            |  3 +
+ .../MIR/AArch64/inst-size-tlsdesc-callseq.mir      | 84 ++++++++++++++++++++++
+ 2 files changed, 87 insertions(+)
+ create mode 100644 test/CodeGen/MIR/AArch64/inst-size-tlsdesc-callseq.mir
+
+diff --git a/lib/Target/AArch64/AArch64InstrInfo.cpp b/lib/Target/AArch64/AArch64InstrInfo.cpp
+index 0aa4708f35ac..d39542a8e4eb 100644
+--- a/lib/Target/AArch64/AArch64InstrInfo.cpp
++++ b/lib/Target/AArch64/AArch64InstrInfo.cpp
+@@ -56,6 +56,9 @@ unsigned AArch64InstrInfo::GetInstSizeInBytes(const MachineInstr &MI) const {
+   case TargetOpcode::IMPLICIT_DEF:
+   case TargetOpcode::KILL:
+     return 0;
++  case AArch64::TLSDESC_CALLSEQ:
++    // This gets lowered to an instruction sequence which takes 16 bytes
++    return 16;
+   }
+ 
+   llvm_unreachable("GetInstSizeInBytes()- Unable to determin insn size");
+-- 
+2.9.3
+
